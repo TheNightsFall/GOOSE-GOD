@@ -4,7 +4,7 @@ import os
 import requests
 import json
 import random 
-import time
+import asyncio
 from PIL import Image
 from io import BytesIO
 from keep_alive import keep_alive
@@ -20,7 +20,7 @@ class Events(commands.Cog):
   @commands.Cog.listener() 
   async def on_ready(self): #Basically when bot goes online. Prints in console, sets a status.
     print('Bot logged in as {0.user}'.format(bot))
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="severe debugging"))
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="your every move."))
   
   @commands.Cog.listener()
   async def on_message(self, message):
@@ -29,11 +29,8 @@ class Events(commands.Cog):
     else:
       if "honk" in message.content.lower():
         honkQuotes = ['honk.','hOOOONK','honk?','HONK','HONK','HONK HONK','HoNK hoNKK. HOOOOONK~','HOnk hONK','HONK BONK','HONK HONK HONK','HONKERS','HOOOONK. HOOOONK','HOONk hoNK','HONKITY FONKITY','hOnK hOnk', 'hoNK hONk', 'honk', 'honk.']
-        if "$honk" in message.content.lower() == False:
-          response = random.choice(honkQuotes)
-          await message.channel.send(response)
-        else:
-          pass
+        response = random.choice(honkQuotes)
+        await message.channel.send(response)
         await open_honk_account(message,message.author)
         users = await get_honk_data()
         user = message.author
@@ -49,6 +46,8 @@ class Events(commands.Cog):
       #To sista *winks with olives*
       if "eye" in message.content.lower():
         await message.add_reaction('👀')
+      if "coffee" in message.content.lower():
+        await message.add_reaction('☕')
 class Misc(commands.Cog):
   def __init__(self, bot):
     self.bot = bot
@@ -130,18 +129,18 @@ class Economy(commands.Cog):
       responseTwo = " "+str(earnings)+" bread."
       response += responseTwo
       message = await ctx.send("Sacrificing <a:gooserun:802019886846967869>") #Eventually wanna make a list of these messages
-      time.sleep(2)
+      await asyncio.sleep(2)
       await message.edit(content=response)
     elif earnings < 0:
       earnings *= -1
       message = await ctx.send("Sacrificing <a:gooserun:802019886846967869>")
-      time.sleep(2)
+      await asyncio.sleep(2)
       await message.edit(content=f"You've angered the Gods. You lose {earnings} bread on the side of the road.") 
       earnings *= -1
       #See comment above. Also I have no idea how to format strings since [2:] didn't work.
     else:
       message = await ctx.send("Sacrificing <a:gooserun:802019886846967869>")
-      time.sleep(2)
+      await asyncio.sleep(2)
       await message.edit(content="LOL, no one cared. You got nothing, but I did steal your empathy banana.")
     if earnings >= 0 or (earnings < 0 and abs(earnings) <= int(users[str(user.id)]["Wallet"])):
       users[str(user.id)]["Wallet"] += earnings
@@ -287,6 +286,3 @@ def cog_setup(x):
 cog_setup(bot)
 bot.run(os.getenv('ELMOISOURMOM'))
 
-#Random stuff below, no code.
-# dueling, racing, foraging gambling. 8ball should be a thing too.
-#Nights' to-do list: Honking at people. Bank deposit/withdrawal system. Having geese and sending them on quests. Command cooldowns. Daily rewards, daily reminder that smol han. 
