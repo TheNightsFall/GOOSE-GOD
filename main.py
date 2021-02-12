@@ -1,16 +1,30 @@
+#for basic functionality
 import discord
 from discord.ext import commands
-import os
+import os #for env
 import requests
 import json
-import random 
+import random
 import time
+#for image manipulation
 from PIL import Image
 from io import BytesIO
+#for databases, will work out later
+import pymongo
+import dns
+#to keep it running
 from keep_alive import keep_alive
-#Make custom number for leaderboards. If not, show 5.
 
-bot = commands.Bot(command_prefix="$", case_insensitive=True)
+#Pymongo shenanigans, I don't understand a thing :(
+cluster = pymongo.MongoClient(os.getenv('NOTCONNECTIONSTRING'))
+levelling = cluster["disc0"]["honking"]
+
+intents = discord.Intents.default()
+intents.members = True
+
+
+
+bot = commands.Bot(command_prefix="$", case_insensitive=True, intents=intents)
 
 #Basically @bot.event or @client.event, but now in cogs.
 class Events(commands.Cog):
@@ -19,8 +33,12 @@ class Events(commands.Cog):
 
   @commands.Cog.listener() 
   async def on_ready(self): #Basically when bot goes online. Prints in console, sets a status.
+    testing = 0
     print('Bot logged in as {0.user}'.format(bot))
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="severe debugging"))
+    if testing == 0:
+      await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="your every move."))
+    else:
+      await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="debugging, donut use."))
   
   @commands.Cog.listener()
   async def on_message(self, message):
@@ -29,18 +47,19 @@ class Events(commands.Cog):
     else:
       if "honk" in message.content.lower():
         honkQuotes = ['honk.','hOOOONK','honk?','HONK','HONK','HONK HONK','HoNK hoNKK. HOOOOONK~','HOnk hONK','HONK BONK','HONK HONK HONK','HONKERS','HOOOONK. HOOOONK','HOONk hoNK','HONKITY FONKITY','hOnK hOnk', 'hoNK hONk', 'honk', 'honk.']
-        if "$honk" in message.content.lower() == False:
-          response = random.choice(honkQuotes)
-          await message.channel.send(response)
+        response = random.choice(honkQuotes)
+        await message.channel.send(response)
+        
+        #Here the reworking begins
+        stats = levelling.find_one({"id": message.author.id})
+        if stats is None:
+            newuser = {"id": message.author.id, "honks": 1}
+            levelling.insert_one(newuser)
         else:
-          pass
-        await open_honk_account(message,message.author)
-        users = await get_honk_data()
-        user = message.author
-        await get_honk_data()
-        users[str(message.guild.id)][str(user.id)]["Honks"] += 1
-        with open("honk.json","w") as f:
-          json.dump(users,f)
+            honks = stats["honks"] + 1
+            levelling.update_one({"id":message.author.id}, {"$set":{"honks":honks}})
+      if message.content.startswith('imagine'):
+        await message.channel.send("couldn't be me.")
       #Reacts to bread emoji. But not flat bread or french bread. I hate those.
       if message.content == '🍞':
         await message.channel.send('is for me? <:goosebread:802019887542960148>')
@@ -49,6 +68,10 @@ class Events(commands.Cog):
       #To sista *winks with olives*
       if "eye" in message.content.lower():
         await message.add_reaction('👀')
+      if "solar" in message.content.lower(): #Tribute to the one who inspired it. Idk why she asked for a penguin, but she did.
+        await message.add_reaction('🐧')
+      if "coffee" in message.content.lower():
+        await message.add_reaction('☕')
 class Misc(commands.Cog):
   def __init__(self, bot):
     self.bot = bot
@@ -184,40 +207,36 @@ class Honk(commands.Cog):
 
   @commands.command(aliases = ["hc"])
   async def hcount(self, ctx): 
-    await open_honk_account(ctx,ctx.author)
-    user = ctx.author
-    users = await get_honk_data()
-    honkNumber = users[str(ctx.guild.id)][str(user.id)]["Honks"]
+    stats = levelling.find_one({"id": ctx.author.id})
+    if stats is None:
+        honkNumber = 0
+    else:
+        honkNumber = stats["honks"]
     name = ctx.message.author.display_name
     await ctx.send(f"User '{name}' has said 'honk' {honkNumber} times.")
 
   @commands.command(aliases = ["lb"])
-  async def leaderboard(self, ctx,pplShown = 5):
-    users = await get_honk_data()
-    leaderboard = {}
-    total = []
-
-    for user in users[str(ctx.guild.id)]:
-      name = int(user)
-      total_amount = users[str(ctx.guild.id)][str(user)]["Honks"]
-      leaderboard[total_amount] = name
-      total.append(total_amount)
-    total = sorted(total, reverse=True)
-    em = discord.Embed(title = f"Top {pplShown} Honkiest Honkers", color = discord.Color.blue())
-    em.set_thumbnail(url=ctx.guild.icon_url)
-    index = 1
-    for amt in total:
-      id_ = leaderboard[amt]
-      name=str(await bot.fetch_user(id_))
-      name = name[:-5]
-      em.add_field(name = f"{index}. {name}", value = f"{amt}", inline=False)
-    
-      if index == pplShown:
-        break
-      else:
-        index += 1
-    em.set_footer(text="Making Goose God proud since never.")
-    await ctx.send(embed = em)
+  async def leaderboard(self, ctx, pplShown = None):
+      if pplShown == None:
+          pplShown = 5
+      
+      rankings = levelling.find().sort("honks",-1)
+      i = 1
+      em = discord.Embed(title = f"Top {pplShown} Honkiest Honkers", color = discord.Color.blue())
+      em.set_thumbnail(url=ctx.guild.icon_url)
+      for x in rankings:
+          try:
+            temp = ctx.guild.get_member(x["id"])
+            temphonks = x["honks"]
+            em.add_field(name=f"{i}: {temp.name}", value=f"Honks: {temphonks}", inline=False)
+            i += 1
+          except:
+            pass
+          if i == pplShown+1:
+            break
+      em.set_footer(text="Making Goose God proud since never.")
+      await ctx.send(embed = em)
+   
 class Info(commands.Cog):
   def __init__(self,bot):
     self.bot = bot
@@ -286,7 +305,3 @@ def cog_setup(x):
 
 cog_setup(bot)
 bot.run(os.getenv('ELMOISOURMOM'))
-
-#Random stuff below, no code.
-# dueling, racing, foraging gambling. 8ball should be a thing too.
-#Nights' to-do list: Honking at people. Bank deposit/withdrawal system. Having geese and sending them on quests. Command cooldowns. Daily rewards, daily reminder that smol han. 
