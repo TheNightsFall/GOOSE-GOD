@@ -33,7 +33,7 @@ class Events(commands.Cog):
 
   @commands.Cog.listener() 
   async def on_ready(self): #Basically when bot goes online. Prints in console, sets a status.
-    testing = 0
+    testing = 1
     print('Bot logged in as {0.user}'.format(bot))
     if testing == 0:
       await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="your every move."))
@@ -72,6 +72,13 @@ class Events(commands.Cog):
         await message.add_reaction('🐧')
       if "coffee" in message.content.lower():
         await message.add_reaction('☕')
+  
+  @commands.Cog.listener()
+  async def on_command_error(self, ctx, error):
+    if isinstance(error, commands.BadArgument):
+      await ctx.send("Something went wrong, or the command doesn't exist.")
+
+
 class Misc(commands.Cog):
   def __init__(self, bot):
     self.bot = bot
@@ -98,15 +105,40 @@ class Misc(commands.Cog):
     pfp = Image.open(data)
     pfp = pfp.resize((171,171))
     chasing.paste(pfp, (1523,514))
-    chasing.save("profile.jpg") 
-    await ctx.send(content = f"{user.display_name} gets chased!",file = discord.File("profile.jpg"))
+    chasing.save("chasingp.jpg") 
+    await ctx.send(content = f"{user.display_name} gets chased!",file = discord.File("chasingp.jpg"))
+  
+  @commands.command()
+  async def interesting(self, ctx, user:discord.Member = None):
+    if user == None:
+      user = ctx.author
+    interest = Image.open("eddyinteresting.jpg")
+    asset = user.avatar_url_as(size=64)
+    data = BytesIO(await asset.read())
+    pfp = Image.open(data)
+    pfp = pfp.resize((249,249))
+    interest.paste(pfp, (138, 128))
+    interest.save("eddyinterestingp.jpg")
+    await ctx.send(content = f"{user.display_name} is iNteReSTiNG", file=discord.File("eddyinterestingp.jpg"))
   
   @commands.command(aliases = ["hp","honk"]) #Have to get it so doing this won't activate the honking event
   async def honkplebe(self, ctx, user: discord.User=None):
     if user == None:
       await ctx.send("You can't honk at yourself, silly!")
     else: #This doesn't actually ping anyone.
-      await ctx.send(f"{ctx.author.display_name} honked at {user.mention}!") #why the fuck can't i ping with .mention
+      await ctx.send(f"{ctx.author.display_name} honked at {user.mention}!")
+  
+  @commands.command()
+  async def ping(self, ctx):
+      if round(bot.latency * 1000) <= 50:
+        embed=discord.Embed(title="PONG", description=f":ping_pong: The ping is **{round(bot.latency *1000)}** milliseconds! What a gamer! HONK!!", color=0x44ff44)
+      elif round(bot.latency * 1000) <= 100:
+        embed=discord.Embed(title="PONG", description=f":ping_pong: The ping is **{round(bot.latency *1000)}** milliseconds! Still decent. honk.", color=0xffd000)
+      elif round(bot.latency * 1000) <= 200:
+        embed=discord.Embed(title="PONG", description=f":ping_pong: The ping is **{round(bot.latency *1000)}** milliseconds! honk?", color=0xff6600)
+      else:
+        embed=discord.Embed(title="PONG", description=f":ping_pong: The ping is **{round(bot.latency *1000)}** milliseconds! Get that internet checked. hon-- *lags out*", color=0x990000)
+      await ctx.send(embed=embed)
 class Economy(commands.Cog):
   def __init__(self, bot):
     self.bot = bot
@@ -142,7 +174,7 @@ class Economy(commands.Cog):
 
   @commands.command(aliases = ["sac","sc","sf"])
   async def sacrifice(self, ctx):
-    sacrificePositive = [f"<:goosepizza:802019887546368021> PIZZA. You gain",f"The skies open and a goose-shaped cloud gives you",f"Your friends think you've gone insane, praying to a Goose God. But you know better, and you've been rewarded with",f"The Goose Lord smiles upon you. You're mysteriously gifted",f"The Goose God smiles upon you. You receive",f"The Goose God smiles upon you. You receive",f"The Goose God smiles upon you. You receive",f"You really suck at sacrificing and accidently duplicate some of your coins instead. You receive",f"The Goose God smiles upon you. You receive",f"The Goose God smiles upon you. You receive",f"The Goose God smiles upon you. You receive",f"The Goose God smiles upon you. You receive"]
+    sacrificePositive = ["<:goosepizza:802019887546368021> PIZZA. You gain","The skies open and a goose-shaped cloud gives you","Your friends think you've gone insane, praying to a Goose God. But you know better, and you've been rewarded with","The Goose Lord smiles upon you. You're mysteriously gifted","The Goose God smiles upon you. You receive","The Goose God smiles upon you. You receive","The Goose God smiles upon you. You receive","You really suck at sacrificing and accidently duplicate some of your coins instead. You receive","The Goose God smiles upon you. You receive","The Goose God smiles upon you. You receive","The Goose God smiles upon you. You receive","The Goose God smiles upon you. You receive"] #I'm not creative ok.
 
     users = await get_bank_data()
     user = ctx.author
@@ -222,6 +254,7 @@ class Honk(commands.Cog):
       
       rankings = levelling.find().sort("honks",-1)
       i = 1
+      emptychance = 0
       em = discord.Embed(title = f"Top {pplShown} Honkiest Honkers", color = discord.Color.blue())
       em.set_thumbnail(url=ctx.guild.icon_url)
       for x in rankings:
@@ -231,9 +264,11 @@ class Honk(commands.Cog):
             em.add_field(name=f"{i}: {temp.name}", value=f"Honks: {temphonks}", inline=False)
             i += 1
           except:
-            pass
-          if i == pplShown+1:
+            emptychance += 1
+          if i == int(pplShown)+1:
             break
+      if emptychance >= int(pplShown):
+        em.add_field(name="No one has honked. Shame.", value="Type 'honk' to get this leaderboard started.")
       em.set_footer(text="Making Goose God proud since never.")
       await ctx.send(embed = em)
    
@@ -268,33 +303,7 @@ async def get_bank_data():
     users = json.load(f)
   return users
 
-async def open_honk_account(ctx,user):
-  users = await get_honk_data()
-  if str(ctx.guild.id) in users:
-    if str(user.id) in users[str(ctx.guild.id)]:
-      #Both guild and user account created, nothing to see here.
-      pass
-    else:
-      #Makes the user account, guild already made.
-      users[str(ctx.guild.id)][str(user.id)] = {}
-      users[str(ctx.guild.id)][str(user.id)]["Honks"] = 0
-      print("New Honk Data made.")
-  else:
-    #Makes both the guild and the user
-    users[str(ctx.guild.id)] = {}
-    users[str(ctx.guild.id)][str(user.id)] = {}
-    users[str(ctx.guild.id)][str(user.id)]["Honks"] = 0
-    print("New Honk Data Made, with guild data.")
-  with open("honk.json","w") as f:
-    json.dump(users,f)
 
-async def get_honk_data():
-  with open("honk.json","r") as f:
-    users = json.load(f)
-    return users
-
-
-keep_alive()
 #The least useful part of the whole thing
 def cog_setup(x):
   bot.add_cog(Events(x))
@@ -303,5 +312,6 @@ def cog_setup(x):
   bot.add_cog(Honk(x))
   bot.add_cog(Info(x))
 
+keep_alive()
 cog_setup(bot)
 bot.run(os.getenv('ELMOISOURMOM'))
