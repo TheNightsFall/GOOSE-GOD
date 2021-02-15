@@ -6,6 +6,7 @@ import requests
 import json
 import random
 import asyncio
+import math
 #for image manipulation
 from PIL import Image, ImageFont, ImageDraw
 from io import BytesIO
@@ -73,6 +74,19 @@ class Events(commands.Cog):
         await message.add_reaction('🐧')
       if "coffee" in message.content.lower():
         await message.add_reaction('☕')
+  
+  @commands.Cog.listener()
+  async def on_command_error(self, ctx, error):
+    if isinstance(error, commands.CommandOnCooldown):
+      seconds = math.floor(error.retry_after)
+      if seconds > 3600:
+        hours = str(math.floor(seconds/3600))
+        minutes = str(math.ceil((int(seconds) - int(hours)*3600)/60))
+      await ctx.send("Command on cooldown. Try again in "+hours+" hours and "+minutes+" minutes.")
+    elif isinstance(error, commands.BadArgument):
+      pass
+    else:
+      raise error
 class Misc(commands.Cog):
   def __init__(self, bot):
     self.bot = bot
