@@ -107,25 +107,25 @@ class Misc(commands.Cog):
   async def chased(self,ctx, user:discord.Member = None):
     if user == None:
       user = ctx.author
-    chasing = Image.open("images/chasing.jpg")
+    chasing = Image.open("imagemanipulation/chasing.jpg")
     asset = user.avatar_url_as(size=64)
     data = BytesIO(await asset.read())
     pfp = Image.open(data)
     pfp = pfp.resize((171,171))
     chasing.paste(pfp, (1523,514))
-    chasing.save("images/chasingp.jpg") 
-    await ctx.send(content = f"{user.display_name} gets chased!",file = discord.File("images/chasingp.jpg"))
+    chasing.save("imagemanipulation/chasingp.jpg") 
+    await ctx.send(content = f"{user.display_name} gets chased!",file = discord.File("imagemanipulation/chasingp.jpg"))
   
   @commands.command()
   async def interesting(self, ctx, user:discord.Member = None):
     if user == None:
       user = ctx.author
-    interest = Image.open("images/eddyinteresting.jpg")
+    interest = Image.open("imagemanipulation/eddyinteresting.jpg")
     font = ImageFont.truetype("times-ro.ttf", 80)
     draw = ImageDraw.Draw(interest)
     draw.text((101,510),f"{user.display_name} is",(255,255,255), font=font)
-    interest.save("images/eddyinterestingp.jpg")
-    await ctx.send(content = f"{user.display_name} is iNteReSTiNG", file=discord.File("images/eddyinterestingp.jpg"))
+    interest.save("imagemanipulation/eddyinterestingp.jpg")
+    await ctx.send(content = f"{user.display_name} is iNteReSTiNG", file=discord.File("imagemanipulation/eddyinterestingp.jpg"))
   
   @commands.command(aliases = ["hp","honk"])
   async def honkplebe(self, ctx, user: discord.User=None):
