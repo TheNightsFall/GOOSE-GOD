@@ -18,16 +18,17 @@ from keep_alive import keep_alive
 cluster = pymongo.MongoClient(os.getenv('NOTCONNECTIONSTRING'))
 levelling = cluster["disc0"]["honking"]
 servercom = cluster["disc0"]["servercom"]
-#levelling.update_many({}, {"$set": {"quest": 0}}) IT WORKS IT WORKS
-#<a:pepegoose:802019887337439303> yeet
+#levelling.update_many({}, {"$set": {"inventory": []}})
+
 #Sets up the bot.
 intents = discord.Intents.default()
 intents.members = True
 bot = commands.Bot(command_prefix="$", case_insensitive=True, intents=intents)
-nav = Navigation("🔼", "🔽")
-color = discord.Color.dark_gold()
 
+nav = Navigation("🔼", "🔽")
+color = discord.Color.blue()
 bot.help_command = PrettyHelp(navigation = nav, color=color, active_time=40)
+
 #all the random lists of stuff used throughout this
 sacrificePositive = ["<:goosepizza:802019887546368021> PIZZA. You gain","The skies open and a goose-shaped cloud gives you","Your friends think you've gone insane, praying to a Goose God. But you know better, and you've been rewarded with","The Goose Lord smiles upon you. You're mysteriously gifted","The Goose God smiles upon you. You receive","The Goose God smiles upon you. You receive","The Goose God smiles upon you. You receive","You really suck at sacrificing and accidently duplicate some of your coins instead. You receive","The Goose God smiles upon you. You receive","The Goose God smiles upon you. You receive","The Goose God smiles upon you. You receive","The Goose God smiles upon you. You receive"]
 commandInt = {
@@ -67,8 +68,6 @@ class Events(commands.Cog):
             honkQuotes = ['honk.','hOOOONK','honk?','HONK','HONK','HONK HONK','HoNK hoNKK. HOOOOONK~','HOnk hONK','HONK BONK','HONK HONK HONK','HONKERS','HOOOONK. HOOOONK','HOONk hoNK','HONKITY FONKITY','hOnK hOnk', 'hoNK hONk', 'honk', 'honk.']
             response = random.choice(honkQuotes)
             await message.channel.send(response)
-        else:
-          pass
         #Adding a honk to the user's dict.
         stats = levelling.find_one({"id": message.author.id})
         if stats is None:
@@ -79,7 +78,6 @@ class Events(commands.Cog):
             levelling.update_one({"id":message.author.id}, {"$set":{"honks":honks}})
       if message.content.startswith('imagine'):
         await message.channel.send("couldn't be me.")
-      #Reacts to bread emoji. But not flat bread or french bread. I hate those.
       if message.content == '🍞':
         await message.channel.send('is for me? <:goosebread:802019887542960148>')
       if 'bread' in message.content.lower():
@@ -102,7 +100,12 @@ class Events(commands.Cog):
       if seconds > 3600:
         hours = str(math.floor(seconds/3600))
         minutes = str(math.floor((int(seconds) - int(hours)*3600)/60))
-      await ctx.send("<:goosealert:802019887663939654> Command on cooldown. Try again in "+hours+" hours and "+minutes+" minutes.")
+        await ctx.send("<:goosealert:802019887663939654> Command on cooldown. Try again in "+hours+" hours and "+minutes+" minutes.")
+      elif seconds < 60:
+        await ctx.send("<:goosealert:802019887663939654> Command on cooldown. Try again in "+seconds+" seconds.")
+      else:
+        minutes = str(math.floor(seconds/60))
+        await ctx.send("<:goosealert:802019887663939654> Command on cooldown. Try again in " + minutes + " minutes.")
     elif isinstance(error, commands.BadArgument):
       pass
     elif isinstance(error, CommandNotFound):
@@ -120,12 +123,12 @@ class Misc(commands.Cog):
     quote = '"'+json_data[0]['q']+'"\n\t - ' + json_data[0]['a']
     return(quote)
 
-  @commands.command(aliases = ["q","da","discountatlas"], brief = "Fetches a quote", description = "Fetches a quote")
+  @commands.command(aliases = ["q","da","discountatlas"], brief = "Fetches a quote.", description = "Fetches a quote.")
   async def quote(self, ctx):
     quote = self.get_quote()
     await ctx.send(quote)
 
-  @commands.command(brief = "Get chased by a crowd", description = "Get chased by a crowd")
+  @commands.command(brief = "Get chased by a crowd.", description = "Get chased by a crowd.")
   async def chased(self,ctx, user:discord.Member = None):
     if user == None:
       user = ctx.author
@@ -138,7 +141,7 @@ class Misc(commands.Cog):
     chasing.save("imagemanipulation/chasingp.jpg") 
     await ctx.send(content = f"{user.display_name} gets chased!",file = discord.File("imagemanipulation/chasingp.jpg"))
   
-  @commands.command(brief = "iNtErEstInG", description = "iNtErEstInG")
+  @commands.command(brief = "iNtErEstInG.", description = "iNtErEstInG.")
   async def interesting(self, ctx, user:discord.Member = None):
     stats = servercom.find_one({"id": ctx.guild.id})
     if stats is None:
@@ -154,15 +157,17 @@ class Misc(commands.Cog):
       draw.text((101,510),f"{user.display_name} is",(255,255,255), font=font)
       interest.save("imagemanipulation/eddyinterestingp.jpg")
       await ctx.send(content = f"{user.display_name} is iNteReSTiNG", file=discord.File("imagemanipulation/eddyinterestingp.jpg"))
+    else:
+      await ctx.send("This command has been disabled.")
   
-  @commands.command(brief = "Honks at someone", description = "Honks at someone")
+  @commands.command(brief = "Honks at someone.", description = "Honks at someone.")
   async def honk(self, ctx, user: discord.User=None):
     if user == None:
       await ctx.send("You can't honk at yourself, silly!")
     else:
       await ctx.send(f"{ctx.author.display_name} honked at {user.mention}!")
   
-  @commands.command(aliases = ["mc", "cook"], brief = "Microwaves some food", description = "MMMMMMMMMM")
+  @commands.command(aliases = ["mc", "cook"], brief = "Microwaves some food.", description = "MMMMMMMMMM")
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def microwave(self, ctx):
     #Clearly I know how to cook
@@ -176,7 +181,7 @@ class Misc(commands.Cog):
       await message.edit(content="<:microwave:813862298522877984> Microwaving...please wait **"+str(timeLeft)+"** seconds")
     await message.edit(content="You got "+borkBork)
   #Why do I need a ping command? Idk man
-  @commands.command(brief = "ping pong", description = "ping pong")
+  @commands.command(brief = "Ping pong.", description = "Ping pong.")
   async def ping(self, ctx):
       if round(bot.latency * 1000) <= 50:
         embed=discord.Embed(title="PONG", description=f":ping_pong: The ping is **{round(bot.latency *1000)}** milliseconds! What a gamer! HONK!!", color=0x44ff44)
@@ -192,18 +197,17 @@ class Honk(commands.Cog):
   def __init__(self,bot):
     self.bot = bot
 
-  @commands.command(aliases = ["hc"], brief = "Number of user honks.", description = "Number of honks.")
+  @commands.command(aliases = ["hc"], brief = "Number of user honks.", description = "Number of user honks.")
   async def hcount(self, ctx): 
     stats = levelling.find_one({"id": ctx.author.id})
     honkNumber = 0 if stats is None else stats["honks"]
     name = ctx.message.author.display_name
     await ctx.send(f"User '{name}' has said 'honk' {honkNumber} times.")
 
-  @commands.command(aliases = ["leaderboard"], brief = "Top Honkers", description = "Lists the top honkers in your server. HONK.")
+  @commands.command(aliases = ["leaderboard"], brief = "Top Honkers.", description = "Lists the top honkers in your server. HONK.")
   async def lb(self, ctx, pplShown = None):
       if pplShown == None:
           pplShown = 5
-      
       rankings = levelling.find().sort("honks",-1)
       i = 1
       emptychance = 0
@@ -239,7 +243,7 @@ class Economy(commands.Cog):
     levelling.update_one({"id":ctx.author.id}, {"$set":{"balance":bal}})
     await ctx.send("You've gained 200 bread HONK~. Check back in 12 hours.")
 
-  @commands.command(aliases = ["bal"], brief = "Checks your balance", description = "Checks your balance")
+  @commands.command(aliases = ["bal"], brief = "Checks your balance.", description = "Checks your balance.")
   async def balance(self, ctx):
     stats = levelling.find_one({"id": ctx.author.id})
     if stats is None:
@@ -247,11 +251,12 @@ class Economy(commands.Cog):
       levelling.insert_one(newuser)
       print("New User made.")
     stats = levelling.find_one({"id": ctx.author.id})
-    bal = stats["balance"]
+    bread = stats["balance"]
     coins = stats["coins"] #Coins can only be gained by doing quests
-    embed = discord.Embed(title= f"{ctx.author.display_name}'s bread", color= discord.Color.blue()) #This might also change as you get $
+    bal = 1000*int(stats["coins"]) + int(stats["balance"])
+    embed = discord.Embed(title= f"{ctx.author.display_name}'s balance", color= discord.Color.blue()) #This might also change as you get $
     embed.set_thumbnail(url=ctx.author.avatar_url)
-    embed.add_field(name = "Bread", value = bal)
+    embed.add_field(name = "Bread", value = bread)
     embed.add_field(name = "Coins", value = coins)
 
     #Determines footer.
@@ -271,6 +276,23 @@ class Economy(commands.Cog):
       embed.set_footer(text="Goo(d)se God, go outside!")
     await ctx.send(embed=embed)
 
+  #Feeling hungry, might remove later
+  @commands.command(aliases = ["exchange"], brief = "Convert bread to coins.", description = "Convert bread to coins.")
+  async def convert(self, ctx):
+    stats = levelling.find_one({"id": ctx.author.id})
+    if stats is None:
+      newuser = {"id": ctx.author.id, "honks": 0, "balance": 1,"coins": 0, "quests": 0}
+      levelling.insert_one(newuser)
+      await ctx.send("You have nothing to convert.")
+    else:
+      cans = math.floor(stats["balance"]/1000)
+      if cans != 0:
+        bal = int(stats["balance"])-cans*1000
+        levelling.update_one({"id":ctx.author.id}, {"$set":{"balance":bal}})
+        levelling.update_one({"id":ctx.author.id}, {"$set":{"coins":cans}})
+        await ctx.send("Converted "+str(cans*1000)+" bread into "+str(cans)+ " coins. HONK")
+      else:
+        await ctx.send("You're too poor, HONK. You need 1000 bread per coin.")
   @commands.command(aliases = ["sac","sc","sf"], brief = "Sacrifice for bread.", description = "Sacrifice to the Gods, hoping for some bread.")
   @commands.cooldown(15, 21600, commands.BucketType.user)
   async def sacrifice(self, ctx):
@@ -285,7 +307,7 @@ class Economy(commands.Cog):
       response = random.choice(sacrificePositive)
       responseTwo = " "+str(earnings)+" bread."
       response += responseTwo
-      message = await ctx.send("Sacrificing <a:gooserun:802019886846967869>") #Eventually wanna make a list of these messages
+      message = await ctx.send("Sacrificing <a:gooserun:802019886846967869>")
       await asyncio.sleep(2)
       await message.edit(content=response)
     elif earnings < 0:
@@ -294,7 +316,6 @@ class Economy(commands.Cog):
       await asyncio.sleep(2)
       await message.edit(content=f"You've angered the Gods. You lose {earnings} bread on the side of the road.") 
       earnings *= -1
-      #See comment above. Also I have no idea how to format strings since [2:] didn't work.
     else:
       message = await ctx.send("Sacrificing <a:gooserun:802019886846967869>")
       await asyncio.sleep(2)
@@ -309,9 +330,9 @@ class Economy(commands.Cog):
       bal = 0 #No negative balances. No debt.
     levelling.update_one({"id":ctx.author.id}, {"$set":{"balance":bal}})
   
-  @commands.command(aliases = ["coin","cf"], brief = "Flips a coin.", description = "Flips a coin.")
-  @commands.cooldown(25, 21600, commands.BucketType.user)
-  async def coinflip(self, ctx, sideChosen = None):
+  @commands.command(aliases = ["coin","cf", "coinflip"], brief = "Flips a coin.", description = "Flips a coin.")
+  @commands.cooldown(2, 3, commands.BucketType.user)
+  async def flip(self, ctx, sideChosen = None):
     userChoice = 0
     if sideChosen == None:
       await ctx.send("Type 'heads' if you call heads and 'tails' if you call tails.")
@@ -337,19 +358,37 @@ class Economy(commands.Cog):
       levelling.update_one({"id":ctx.author.id}, {"$set":{"balance":bal}})
     elif userChoice != 0:
       w= "You lost **15** bread. honk."
-      if stats["balance"] != 0:
+      if stats["balance"] >= 15:
         bal = stats["balance"] - 15
         levelling.update_one({"id":ctx.author.id}, {"$set":{"balance":bal}})
     if compChoice == 2 and userChoice != 0:
       await ctx.send(":coin: The coin landed on heads! "+w)
     elif userChoice != 0:
       await ctx.send(":coin: The coin landed on tails! "+w)
+  
+  @commands.command(aliases = ["race"], brief = "Go racing, see if you win.", description = "Go racing, see if you win.")
+  async def racing(self, ctx, amt = None):
+    amt = 10 if amt == None or amt.isnumeric() == False else int(amt)
+    n = random.randint(1,5)
+    stats = levelling.find_one({"id": ctx.author.id})
+    if stats is None:
+      newuser = {"id": ctx.author.id, "honks": 0, "balance": 0,"coins": 0, "quests": 0}
+      levelling.insert_one(newuser)
+      print("New User made.")
+    stats = levelling.find_one({"id": ctx.author.id})
+    if n == 1:
+      bal = int(stats["balance"]) + amt if stats["balance"] != 0 else amt
+    else:
+      bal = int(stats["balance"]) - amt if stats["balance"] != 0 and amt <= stats["balance"] else 0
+    levelling.update_one({"id":ctx.author.id}, {"$set":{"balance":bal}})
+    result = f"You won the race and gained {amt} bread." if n == 1 else f"You lost the race and lose {amt} bread."
+    message = await ctx.send("Racing <a:pepegoose:802019887337439303>")
+    await asyncio.sleep(3)
+    await message.edit(content=result)
 
-  @commands.command(aliases = ["blb","bleaderboard","breadleaderboard"], brief = "Top breadwinners.", description = "Lists the top breadwinners in your server.")
-  async def breadlb(self, ctx, pplShown = None):
-    if pplShown == None:
-      pplShown = 5
-    
+  @commands.command(aliases = ["breadlb","bleaderboard","breadleaderboard"], brief = "Top breadwinners.", description = "Lists the top breadwinners in your server.")
+  async def blb(self, ctx, pplShown = None):
+    pplShown = 5 if pplShown == None or pplShown.isnumeric() == False else int(pplShown)
     rankings = levelling.find().sort("balance",-1)
     i = 1
     emptychance = 0
@@ -376,7 +415,7 @@ class Util(commands.Cog):
     em = discord.Embed(title = "About", color= discord.Color.blue(),description = "On September 15th, Nights promised to make a bot that only responded to HONKS. That night, HONKERS, the bot now known as GOOSE GOD, was born. The project was left in a dusty python folder that didn't even bother using a .env file to hide its bot token, all the way until 1/21/21, when Nights decided that instead of studying for her two finals the day after, to instead pull up repl.it and being anew with the bot. Within two days it was a piece of shit that responds to honks. \n\nOk, enough poeticism. It's a fucking goose bot. What more do I have to say? *grumbles*")
     await ctx.send(embed = em)
   
-  @commands.command(brief = "Disables commands", description = "Disables certain commands, check $toggle for a list of what you can disable.")
+  @commands.command(brief = "Disables commands.", description = "Disables certain commands, check $toggle for a list of what you can disable.")
   #*Immediately gets insulted for not using bits*. My own unique and terrible method of toggling commands.
   async def disable(self, ctx, com = None):
     global commandInt
@@ -397,7 +436,7 @@ class Util(commands.Cog):
           await ctx.send("You've already disabled this command. HONK")
       except KeyError:
         await ctx.send("You can't disable a nonexistent command HONK~. Type '$toggle' to see a list of what you can disable and enable.")
-  @commands.command(brief = "Enables commands", description = "Enables certain commands, check $toggle for a list of what you can disable.")
+  @commands.command(brief = "Enables commands.", description = "Enables certain commands, check $toggle for a list of what you can disable.")
   async def enable(self, ctx, com = None):
     global commandInt
     stats = servercom.find_one({"id": ctx.guild.id})
@@ -418,7 +457,7 @@ class Util(commands.Cog):
           await ctx.send("You've already enabled this command. HONK")
       except KeyError:
         await ctx.send("You can't enable a nonexistent command HONK~. Type '$toggle' to see a list of what you can disable and enable.")
-  @commands.command(brief = "List of toggleable commands", description = "List of commands that can be disabled and enabled.")
+  @commands.command(brief = "List of toggleable commands.", description = "List of commands that can be disabled and enabled.")
   async def toggle(self, ctx):
     em = discord.Embed(title="Toggleable Commands", description="What you can turn off by typing after $disable.", color =discord.Color.blue())
     em.set_thumbnail(url=ctx.guild.icon_url)
