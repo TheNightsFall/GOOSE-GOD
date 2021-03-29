@@ -82,6 +82,14 @@ version = "1.0.1"
 
 [[package]]
 category = "main"
+description = "And nicer looking interactive help menu for discord.py"
+name = "discord-pretty-help"
+optional = false
+python-versions = ">=3.6,<4.0"
+version = "1.2.2"
+
+[[package]]
+category = "main"
 description = "A Python wrapper for the Discord API"
 name = "discord.py"
 optional = false
@@ -195,6 +203,14 @@ zstd = ["zstandard"]
 
 [[package]]
 category = "main"
+description = "World timezone definitions, modern and historical"
+name = "pytz"
+optional = false
+python-versions = "*"
+version = "2021.1"
+
+[[package]]
+category = "main"
 description = "A library for interacting with features of repl.it"
 name = "replit"
 optional = false
@@ -252,7 +268,7 @@ idna = ">=2.0"
 multidict = ">=4.0"
 
 [metadata]
-content-hash = "0c94f93f5eb23713557d3af603aa14233b9d7385b80aa81d617a7024a247d909"
+content-hash = "9ffba969252329ce1682f075855619de9261c34b2579c696a4a162cebd179096"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -318,6 +334,10 @@ dadjokes = [
 discord = [
     {file = "discord-1.0.1-py3-none-any.whl", hash = "sha256:9d4debb4a37845543bd4b92cb195bc53a302797333e768e70344222857ff1559"},
     {file = "discord-1.0.1.tar.gz", hash = "sha256:ff6653655e342e7721dfb3f10421345fd852c2a33f2cca912b1c39b3778a9429"},
+]
+discord-pretty-help = [
+    {file = "discord-pretty-help-1.2.2.tar.gz", hash = "sha256:caa30c0e8acf09d85a7261145e441f6113332641e825c5b046e097e37bf6ec6b"},
+    {file = "discord_pretty_help-1.2.2-py3-none-any.whl", hash = "sha256:d136a72329f89e1210cbf42e47abd97e77d23c1fea56a3d9c8232210c5782601"},
 ]
 "discord.py" = [
     {file = "discord.py-1.6.0-py3-none-any.whl", hash = "sha256:3df148daf6fbcc7ab5b11042368a3cd5f7b730b62f09fb5d3cbceff59bcfbb12"},
@@ -501,6 +521,10 @@ pymongo = [
     {file = "pymongo-3.11.3-cp39-cp39-win_amd64.whl", hash = "sha256:ee42a8f850143ae7c67ea09a183a6a4ad8d053e1dbd9a1134e21a7b5c1bc6c73"},
     {file = "pymongo-3.11.3-py2.7-macosx-10.14-intel.egg", hash = "sha256:7edff02e44dd0badd749d7342e40705a398d98c5d8f7570f57cff9568c2351fa"},
     {file = "pymongo-3.11.3.tar.gz", hash = "sha256:db5098587f58fbf8582d9bda2462762b367207246d3e19623782fb449c3c5fcc"},
+]
+pytz = [
+    {file = "pytz-2021.1-py2.py3-none-any.whl", hash = "sha256:eb10ce3e7736052ed3623d49975ce333bcd712c7bb19a58b9e2089d4057d0798"},
+    {file = "pytz-2021.1.tar.gz", hash = "sha256:83a4a90894bf38e243cf052c8b58f381bfe9a7a483f6a9cab140bc7f702ac4da"},
 ]
 replit = [
     {file = "replit-2.0.0-py3-none-any.whl", hash = "sha256:862b49887f486a5c83eba4809b86a977378a008f1c5d53ab3c1187418194cf18"},
