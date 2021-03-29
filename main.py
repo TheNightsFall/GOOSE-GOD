@@ -1,3 +1,4 @@
+#for basic functionality
 import discord
 from discord.ext import tasks, commands
 from discord.ext.commands import CommandNotFound
@@ -134,5 +135,3 @@ if __name__ == "__main__":
   bot.run(os.getenv('ELMOISOURMOM'))
 else:
   print("Something went wrong.")
-
-
